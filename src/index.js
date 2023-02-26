@@ -1,10 +1,7 @@
 require("dotenv").config();
-const TelegramBot = require("node-telegram-bot-api");
-const BotToken = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(BotToken, { polling: true });
+const createBoard = require("./utils/createBoard");
+const connectMongoose = require("./config/db.config");
+const registerBotEvents = require("./utils/botEvents");
 
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
-  console.log(msg.text);
-  bot.sendMessage(chatId, "Received your message");
-});
+connectMongoose();
+registerBotEvents();
