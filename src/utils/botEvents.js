@@ -8,15 +8,15 @@ const fetchBoards = require("./fetchBoards"); // This function is used to get Al
 const logout = require("./logout"); // This function is used logout the Authorized Trello Account And Revoke The Access From Telegram Bot
 const saveCredentials = require("./saveCredentials"); // This function is used To Save Token in MongoDB database
 const saveDefaultBoard = require("./saveDefaultBoard"); // This function is used To Set Or Change Default Working Board
-const getDefaultBoard = require("./getDefaultBoard");  // This function is used To Get Default Working Board
-const getListFromBoard = require("./getListFromBoard");  // This function is used To  Get All List Available in Default Board
-const createCard = require("./createCard");  // This function is used To Create Card Using Trello API
-const getCardFromList = require("./getCardsFromList");  // This function is used Get All Card Inside A List Using Trello API
-const moveCard = require("./moveCard");  // This function is used To Move Card From List To Another
-const deleteCard = require("./deleteCard");  // This function is used To Delete a Card Using Trello API
+const getDefaultBoard = require("./getDefaultBoard"); // This function is used To Get Default Working Board
+const getListFromBoard = require("./getListFromBoard"); // This function is used To  Get All List Available in Default Board
+const createCard = require("./createCard"); // This function is used To Create Card Using Trello API
+const getCardFromList = require("./getCardsFromList"); // This function is used Get All Card Inside A List Using Trello API
+const moveCard = require("./moveCard"); // This function is used To Move Card From List To Another
+const deleteCard = require("./deleteCard"); // This function is used To Delete a Card Using Trello API
 
 // using TelegramBot Cosntructor To Create bot Object With Polling Enabled
-const bot = new TelegramBot(BotToken, { polling: true });
+const bot = new TelegramBot(BotToken || "", { polling: true });
 
 function registerEvents() {
   // Code Of /help Command matching with regex
@@ -150,7 +150,7 @@ function registerEvents() {
     }
   });
 
-  // Code Of Command /setboard which is responsible for selection of default working board where all card realted commands will be executed 
+  // Code Of Command /setboard which is responsible for selection of default working board where all card realted commands will be executed
   bot.onText(/\/setboard/, async (msg) => {
     try {
       let { key, token } = await checkAuthorized(msg.chat.id);
@@ -286,7 +286,7 @@ function registerEvents() {
       })
       .then((listIDMessageReply) => {
         bot.onReplyToMessage(msg.chat.id, listIDMessageReply.message_id, async (listIDMessage) => {
-          // A Selected ListID from Which The Card is to Be Deleted 
+          // A Selected ListID from Which The Card is to Be Deleted
           const fromListID = listIDMessage.text;
           let cardList = await getCardFromList(fromListID, key, token);
           const cardListNames = cardList.map((card) => `<b>${card.name}</b> <a href=''>${card.id}</a>`).join("\n");
