@@ -14,6 +14,12 @@ const createCard = require("./createCard"); // This function is used To Create C
 const getCardFromList = require("./getCardsFromList"); // This function is used Get All Card Inside A List Using Trello API
 const moveCard = require("./moveCard"); // This function is used To Move Card From List To Another
 const deleteCard = require("./deleteCard"); // This function is used To Delete a Card Using Trello API
+const updateBoardName = require("./updateBoardName");
+const updateCard = require("./updateCard");
+const getAllCards = require("./getAllCards");
+const createList = require("./createList");
+const updateList = require("./updateList");
+const deleteList = require("./deleteList");
 
 // using TelegramBot Cosntructor To Create bot Object With Polling Enabled
 const bot = new TelegramBot(BotToken || "", { polling: true });
@@ -81,7 +87,7 @@ function registerEvents() {
     try {
       // logout function delete token from database
       await logout(msg.chat.id);
-      bot.sendMessage(msg.chat.id, `Logged Out Successfully`);
+      bot.sendMessage(msg.chat.id, `Logged Out Successfully ! Try Login Again /start`);
     } catch (e) {
       bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /start");
     }
@@ -116,7 +122,7 @@ function registerEvents() {
       }
       // Creating Proper Message Of List Of Boards To Respond .
       const boardNames = boards.map((board) => `<b>${board.name}</b> ${board.id}`).join("\n");
-      bot.sendMessage(msg.chat.id, boardNames, { parse_mode: "HTML" });
+      bot.sendMessage(msg.chat.id, `These Are The Available Boards With Respective ID's\n \n` + boardNames, { parse_mode: "HTML" });
     } catch (e) {
       bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /start");
     }
@@ -134,7 +140,45 @@ function registerEvents() {
       }
       // Creating Proper Message Of List Of Boards To Respond .
       const boardNames = boards.map((board) => `<b>${board.name}</b> <a href=''>/delete_${board.id}</a>`).join("\n");
-      bot.sendMessage(msg.chat.id, boardNames, { parse_mode: "HTML" });
+      bot.sendMessage(msg.chat.id, `Click On Command Next To Board You Want To Delete \n\n` + boardNames, { parse_mode: "HTML" });
+    } catch (e) {
+      bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /start");
+    }
+  });
+
+  // Code For Command /editboard to Edit Board Name
+  bot.onText(/\/editboard/, async (msg) => {
+    try {
+      // Using checkAuthorized Function To Check If User is Authorized And Get back Api Key And Token For Further Usage
+      let { key, token } = await checkAuthorized(msg.chat.id);
+      // Using Fetch Boards Function To Fetch All Boards
+      let boards = await fetchBoards(key, token);
+      if (boards.length == 0) {
+        return bot.sendMessage(msg.chat.id, "<b>No Boards Are There Create Some Using . /createboard</b>", { parse_mode: "HTML" });
+      }
+      // Creating Proper Message Of List Of Boards To Respond .
+      const boardNames = boards.map((board) => `<b>${board.name}</b> <a href=''> ${board.id}</a>`).join("\n");
+      bot.sendMessage(msg.chat.id, "Select A Board By Replying ID of Board To This Message" + "\n" + "\n" + boardNames, { parse_mode: "HTML" }).then((boardIdReply) => {
+        bot.onReplyToMessage(msg.chat.id, boardIdReply.message_id, (boardIdMessage) => {
+          let boardID = boardIdMessage.text;
+          let selectedName;
+          boards.forEach((board) => {
+            if (board.id === boardID) selectedName = board.name;
+          });
+          bot.sendMessage(msg.chat.id, "You Have Selected A Board " + `<b>${selectedName}</b>` + ". Reply New Name To This Message to proceed .", { parse_mode: "HTML" }).then((newBoardNameReply) => {
+            bot.onReplyToMessage(msg.chat.id, newBoardNameReply.message_id, async (newBoardNameMessage) => {
+              let newBoardName = newBoardNameMessage.text;
+              try {
+                // updateBoardName Function is Used To Update Board Name
+                await updateBoardName(boardID, key, token, newBoardName);
+                bot.sendMessage(msg.chat.id, "Name Of Board Changed From " + `<b>${selectedName}</b>` + ` to <b>${newBoardName}</b> Successfully .`, { parse_mode: "HTML" });
+              } catch (e) {
+                bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again By /editboard or Start Fresh /start");
+              }
+            });
+          });
+        });
+      });
     } catch (e) {
       bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /start");
     }
@@ -163,7 +207,7 @@ function registerEvents() {
         return bot.sendMessage(msg.chat.id, "<b>No Boards Are There Create Some Using . /createboard</b>", { parse_mode: "HTML" });
       }
       const boardNames = boards.map((board) => `<b>${board.name}</b> <a href=''>/set_${board.id}</a>`).join("\n");
-      bot.sendMessage(msg.chat.id, boardNames, { parse_mode: "HTML" });
+      bot.sendMessage(msg.chat.id, `Click On Command Next To Board You Want To Set As Default Working Board . \n\n` + boardNames, { parse_mode: "HTML" });
     } catch (e) {
       bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /start");
     }
@@ -275,6 +319,59 @@ function registerEvents() {
       });
   });
 
+  // Code For Command /editboard
+
+  bot.onText(/\/editcard/, async (msg) => {
+    const defaultBoardId = await getDefaultBoard(msg.chat.id);
+    let { key, token } = await checkAuthorized(msg.chat.id);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(msg.chat.id, "There's No Default Board Set One Using /setboard .");
+    }
+    const listIDArr = await getListFromBoard(defaultBoardId, key, token);
+    const listNames = listIDArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
+    bot
+      .sendMessage(msg.chat.id, "<b>Select A List To Edit Card From  . To Select A List Reply With List ID</b>" + "\n" + "\n" + listNames, {
+        parse_mode: "HTML",
+      })
+      .then((listIDMessageReply) => {
+        bot.onReplyToMessage(msg.chat.id, listIDMessageReply.message_id, async (listIDMessage) => {
+          // A Selected ListID from Which The Card is to Be Deleted
+          const fromListID = listIDMessage.text;
+          let cardList = await getCardFromList(fromListID, key, token);
+          const cardListNames = cardList.map((card) => `<b>${card.name}</b> <a href=''>${card.id}</a>`).join("\n");
+          bot
+            .sendMessage(msg.chat.id, "<b>Select A Card To Edit . To Select A Card Reply With Card ID</b>" + "\n" + "\n" + cardListNames, {
+              parse_mode: "HTML",
+            })
+            .then((cardIdReply) => {
+              bot.onReplyToMessage(msg.chat.id, cardIdReply.message_id, async (cardIdText) => {
+                let cardID = cardIdText.text;
+                bot.sendMessage(msg.chat.id, "Reply New Name For Card With This Message .").then((nameMsg) => {
+                  bot.onReplyToMessage(msg.chat.id, nameMsg.message_id, (nameReply) => {
+                    // new name of card
+                    const name = nameReply.text;
+                    bot.sendMessage(msg.chat.id, "Reply new description for card with this message .").then(async (descMsg) => {
+                      bot.onReplyToMessage(msg.chat.id, descMsg.message_id, (descReply) => {
+                        // new description of  card
+                        const desc = descReply.text;
+                        // updateCard Function use trello Api to update  card
+                        updateCard(cardID, key, token, name, desc)
+                          .then(() => {
+                            bot.sendMessage(msg.chat.id, `Card Details Successfully With Name :- <b>${name}</b> And Other Details`, { parse_mode: "HTML" });
+                          })
+                          .catch((err) => {
+                            bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /editcard or /setboard if You Have Deleted Default Board . To Start Fresh Do /start");
+                          });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+        });
+      });
+  });
+
   // Code For Command /deletecard Used To delete a card from default selected board
   bot.onText(/\/deletecard/, async (msg) => {
     const defaultBoardId = await getDefaultBoard(msg.chat.id);
@@ -317,6 +414,126 @@ function registerEvents() {
             });
         });
       });
+  });
+
+  // Code For Command /showcard to See All Cards With list
+
+  bot.onText(/\/showallcards/, async (msg) => {
+    const defaultBoardId = await getDefaultBoard(msg.chat.id);
+    let { key, token } = await checkAuthorized(msg.chat.id);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(msg.chat.id, "There's No Default Board Set One Using /setboard .");
+    }
+    try {
+      // respArr store array from call to getAll Cards Function Which Respond With All Cards With List They Belong to
+      let respArr = await getAllCards(defaultBoardId, key, token);
+      bot.sendMessage(msg.chat.id, respArr.join("\n"), { parse_mode: "HTML" });
+    } catch (e) {
+      bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /showallcards or /setboard if You Have Deleted Default Board . To Start Fresh Do /start");
+    }
+  });
+
+  // All Code Of Commands Related To List Like /createlist /editlist /showlist /deletelist .
+  bot.onText(/\/createlist/, async (msg) => {
+    let chatID = msg.chat.id;
+    const defaultBoardId = await getDefaultBoard(msg.chat.id);
+    let { key, token } = await checkAuthorized(msg.chat.id);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(msg.chat.id, "There's No Default Board Set One Using /setboard .");
+    }
+    bot.sendMessage(chatID, "Reply With List Name To This Message .").then((listNameReply) => {
+      bot.onReplyToMessage(chatID, listNameReply.message_id, async (listNameText) => {
+        let listName = listNameText.text;
+        try {
+          await createList(key, token, listName, defaultBoardId);
+          bot.sendMessage(chatID, "List Created Successfully With Name :- " + `<b>${listName}</b>`, { parse_mode: "HTML" });
+        } catch (e) {
+          bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /createlist or /setboard if You Have Deleted Default Board . To Start Fresh Do /start");
+        }
+      });
+    });
+  });
+
+  bot.onText(/\/editlist/, async (msg) => {
+    let chatID = msg.chat.id;
+    const defaultBoardId = await getDefaultBoard(msg.chat.id);
+    let { key, token } = await checkAuthorized(msg.chat.id);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(msg.chat.id, "There's No Default Board Set One Using /setboard .");
+    }
+
+    const listIdsArr = await getListFromBoard(defaultBoardId, key, token);
+    const listNames = listIdsArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
+    bot
+      .sendMessage(msg.chat.id, "<b>Select A List To Edit . To Select A List Reply With List ID</b>" + "\n" + "\n" + listNames, {
+        parse_mode: "HTML",
+      })
+      .then((listIDMessageReply) => {
+        bot.onReplyToMessage(msg.chat.id, listIDMessageReply.message_id, async (listIDMessage) => {
+          // A Selected ListID from Which The Card is to Be Deleted
+          const selectedListId = listIDMessage.text;
+          bot.sendMessage(chatID, "Reply With New Name For List To This Message .").then((listNameReply) => {
+            bot.onReplyToMessage(chatID, listNameReply.message_id, async (listNameText) => {
+              let newListName = listNameText.text;
+              try {
+                await updateList(key, token, newListName, selectedListId);
+                bot.sendMessage(chatID, "List Updated Successfully With New Name :- " + `<b>${newListName}</b>`, { parse_mode: "HTML" });
+              } catch (e) {
+                console.log(e.message);
+                bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /editlist or /setboard if You Have Deleted Default Board . To Start Fresh Do /start");
+              }
+            });
+          });
+        });
+      });
+  });
+
+  bot.onText(/\/deletelist/, async (msg) => {
+    let chatID = msg.chat.id;
+    const defaultBoardId = await getDefaultBoard(msg.chat.id);
+    let { key, token } = await checkAuthorized(msg.chat.id);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(msg.chat.id, "There's No Default Board Set One Using /setboard .");
+    }
+
+    const listIdsArr = await getListFromBoard(defaultBoardId, key, token);
+    const listNames = listIdsArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
+    bot
+      .sendMessage(msg.chat.id, "<b>Select A List To Edit . To Select A List Reply With List ID</b>" + "\n" + "\n" + listNames, {
+        parse_mode: "HTML",
+      })
+      .then((listIDMessageReply) => {
+        bot.onReplyToMessage(msg.chat.id, listIDMessageReply.message_id, async (listIDMessage) => {
+          // A Selected ListID from Which The Card is to Be Deleted
+          const selectedListId = listIDMessage.text;
+          let newListName;
+          listIdsArr.forEach((list) => {
+            if (list.id === selectedListId) newListName = list.name;
+          });
+          try {
+            await deleteList(key, token, selectedListId);
+            bot.sendMessage(chatID, "Deleted List Successfully With Name :- " + `<b>${newListName}</b>`, { parse_mode: "HTML" });
+          } catch (e) {
+            console.log(e.message);
+            bot.sendMessage(msg.chat.id, "Some Error Occured ! Try Again /deletelist or /setboard if You Have Deleted Default Board . To Start Fresh Do /start");
+          }
+        });
+      });
+  });
+
+  bot.onText(/\/showlist/, async (msg) => {
+    let chatID = msg.chat.id;
+    const defaultBoardId = await getDefaultBoard(chatID);
+    let { key, token } = await checkAuthorized(chatID);
+    if (defaultBoardId == "") {
+      return bot.sendMessage(chatID, "There's No Default Board Set One Using /setboard .");
+    }
+
+    const listIdsArr = await getListFromBoard(defaultBoardId, key, token);
+    const listNames = listIdsArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
+    bot.sendMessage(chatID, "<b>All Available Lists Are .</b>" + "\n" + "\n" + listNames, {
+      parse_mode: "HTML",
+    });
   });
 }
 module.exports = registerEvents;
