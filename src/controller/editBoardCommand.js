@@ -13,14 +13,14 @@ const editBoardCommand = async (msg, bot) => {
     }
     // Creating Proper Message Of List Of Boards To Respond .
     const boardNames = boards.map((board) => `<b>${board.name}</b> <a href=''> ${board.id}</a>`).join("\n");
-    bot.sendMessage(msg.chat.id, "Select A Board By Replying ID of Board To This Message" + "\n" + "\n" + boardNames, { parse_mode: "HTML" }).then((boardIdReply) => {
+    bot.sendMessage(msg.chat.id, "Select A Board By Replying ID of Board With This Message" + "\n" + "\n" + boardNames, { parse_mode: "HTML" }).then((boardIdReply) => {
       bot.onReplyToMessage(msg.chat.id, boardIdReply.message_id, (boardIdMessage) => {
         let boardID = boardIdMessage.text;
         let selectedName;
         boards.forEach((board) => {
           if (board.id === boardID) selectedName = board.name;
         });
-        bot.sendMessage(msg.chat.id, "You Have Selected A Board " + `<b>${selectedName}</b>` + ". Reply New Name To This Message to proceed .", { parse_mode: "HTML" }).then((newBoardNameReply) => {
+        bot.sendMessage(msg.chat.id, "You Have Selected A Board " + `<b>${selectedName}</b>` + ". Reply New Name With This Message to proceed .", { parse_mode: "HTML" }).then((newBoardNameReply) => {
           bot.onReplyToMessage(msg.chat.id, newBoardNameReply.message_id, async (newBoardNameMessage) => {
             let newBoardName = newBoardNameMessage.text;
             try {

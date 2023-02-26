@@ -13,7 +13,7 @@ const deleteListCommand = async (msg, bot) => {
   const listIdsArr = await getListFromBoard(defaultBoardId, key, token);
   const listNames = listIdsArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
   bot
-    .sendMessage(msg.chat.id, "<b>Select A List To Edit . To Select A List Reply With List ID</b>" + "\n" + "\n" + listNames, {
+    .sendMessage(msg.chat.id, "<b>Select A List To Edit . To Select A List Reply List ID with this Message </b>" + "\n" + "\n" + listNames, {
       parse_mode: "HTML",
     })
     .then((listIDMessageReply) => {

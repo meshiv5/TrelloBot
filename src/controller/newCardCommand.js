@@ -13,7 +13,7 @@ const newCardCommand = async (msg, bot) => {
   const listIDArr = await getListFromBoard(defaultBoardId, key, token);
 
   const listNames = listIDArr.map((list) => `<b>${list.name}</b> <a href=''>${list.id}</a>`).join("\n");
-  bot.sendMessage(msg.chat.id, "<b>To Select A List Reply With List ID</b>" + "\n" + "\n" + listNames, { parse_mode: "HTML" }).then((listIDMessageReply) => {
+  bot.sendMessage(msg.chat.id, "<b>To Select A List Reply With List ID To This Message</b>" + "\n" + "\n" + listNames, { parse_mode: "HTML" }).then((listIDMessageReply) => {
     bot.onReplyToMessage(msg.chat.id, listIDMessageReply.message_id, (listIDMessage) => {
       // listId will be selected List Where New Card is to be created
       const listID = listIDMessage.text;

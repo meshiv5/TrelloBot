@@ -1,5 +1,5 @@
 const createTrelloBoard = require("../utils/createBoard"); // This function is used to create Trello Board Using Trello API
-
+const checkAuthorized = require("../utils/checkAuthorized");
 const createBoardCommand = async (msg, bot) => {
   try {
     bot.sendMessage(msg.chat.id, `Reply With Board Name `).then((boardNameReply) => {

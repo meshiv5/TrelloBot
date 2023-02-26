@@ -1,3 +1,4 @@
+const logout = require("../utils/logout");
 const logoutCommand = async (msg, bot) => {
   try {
     // logout function delete token from database

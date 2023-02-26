@@ -1,5 +1,6 @@
 const checkAuthorized = require("../utils/checkAuthorized"); // This function return {key , token} if Authorized or False
-
+const checkValidToken = require("../utils/checkValidToken");
+const saveCredentials = require("../utils/saveCredentials");
 const startCommand = async (msg, bot) => {
   // using checkAuthorized Function With chatID to check If User is Authorized Or Not This function check Databse If Token Exist Or Not
   let isAuthorized = await checkAuthorized(msg.chat.id);
@@ -10,7 +11,7 @@ const startCommand = async (msg, bot) => {
   bot
     .sendMessage(
       msg.chat.id,
-      "Login To Trello Account Click <a href='https://trello.com/en/login'>Here</a> . Go <a href='https://trello.com/power-ups/admin/'>Here</a> Accept Agreement . Then Click <a href='https://trello.com/app-key'>Here</a> To Get Personal App Key And Reply Key With this message to proceed .",
+      "Login To Trello Account Click <a href='https://trello.com/en/login'>Here</a> . Go <a href='https://trello.com/power-ups/admin/'>Here</a> Then Accept Agreement . Then Click <a href='https://trello.com/app-key'>Here</a> To Get <b>Personal App Key</b> And Reply Key By Selecting this message to proceed .",
       {
         parse_mode: "HTML",
       }
@@ -20,7 +21,7 @@ const startCommand = async (msg, bot) => {
         bot
           .sendMessage(
             msg.chat.id,
-            `Click <a href='https://trello.com/1/authorize?expiration=30days&name=Trello%20Integration%20Demo&key=${appKey.text}&scope=read,write&response_type=token'>Here</a> And Authorize The Application To Get Token And Reply Token With This Message To Authorize Yourself`,
+            `Click <a href='https://trello.com/1/authorize?expiration=30days&name=Trello%20Integration%20Demo&key=${appKey.text}&scope=read,write&response_type=token'>Here</a> And Authorize The Application To Get Token And Reply Token By Selecting This Message To Authorize Yourself`,
             { parse_mode: "HTML" }
           )
           .then((tokenMessage) => {
