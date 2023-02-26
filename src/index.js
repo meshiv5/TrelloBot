@@ -1,6 +1,6 @@
 require("dotenv").config();
 const connectMongoose = require("./config/db.config");
-const registerBotEvents = require("./utils/botEvents");
+const registerBotEvents = require("./utils/bot");
 // Invocation Of connectMongoose Function To Get Connected To Database
 connectMongoose();
 // Invoking registerBotEvents Funtion To Register All Telegram Bot Related Events .
