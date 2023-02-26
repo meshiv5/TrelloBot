@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-let mongoURL = process.env.MONGO_DB_URL;
+let mongoURL = process.env.MONGO_DB_URL; // MongoDB uri
 
 async function connect() {
   mongoose.set("strictQuery", false);
