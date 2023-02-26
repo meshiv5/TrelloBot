@@ -9,8 +9,7 @@ A Telegram Bot To Work With Trello API For Managing Trello Boards From Telegram 
 ## 🔗 Deployed Links
 - [Telegram Bot](https://t.me/TrelloManage_bot)
 
-And The Backend Microservice is Running in DigitalOcean NodeJS Droplet With PM2.
-
+The Backend Microservice is Running in DigitalOcean NodeJS Droplet With PM2.(*.env File Is Not Hidden Purposely)
 ## Showcase
 
 ![App Screenshot](https://i.ibb.co/v3g75DW/trello-Bot.png)
