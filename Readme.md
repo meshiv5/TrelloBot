@@ -44,6 +44,7 @@ Here are some available commands:
 ## Features
 
 - Login / Logout With Different Trello Accounts
+- Set Default Working Board
 - Create - Edit - Show - Delete Boards
 - Create - Edit - Show - Archive List
 - Create - Edit - Show - Delete - Move Cards
