@@ -4,15 +4,12 @@
 A Telegram Bot To Work With Trello API For Managing Trello Boards From Telegram Bot .
 
 
-## Run This Project Locally
- Setup This Project Locally Before Using Telegeram Bot Beacause Of Long Polling This Project is Not Deployed Cause it Will Not Work With Serverless Providers .
-- git clone https://github.com/meshiv5/TrelloBot
-- npm i
-- npm run start
+
 
 ## 🔗 Deployed Links
 - [Telegram Bot](https://t.me/TrelloManage_bot)
 
+And The Backend Microservice is Running in DigitalOcean NodeJS Droplet .
 
 ## Showcase
 
