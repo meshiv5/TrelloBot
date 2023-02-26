@@ -9,7 +9,6 @@ const userSchema = mongoose.Schema({
   appKey: {
     type: String,
     required: true,
-    unique: true,
   },
   token: {
     type: String,

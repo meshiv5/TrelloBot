@@ -43,9 +43,13 @@ function registerEvents() {
     }
     // If Not Authorized Proceed With Other Steps
     bot
-      .sendMessage(msg.chat.id, "Firstly Login Trello Account Click <a href='https://trello.com/en/login'>Here</a> Then Click <a href='https://trello.com/app-key'>Here</a> To Get App Key And Reply Key With This Message", {
-        parse_mode: "HTML",
-      })
+      .sendMessage(
+        msg.chat.id,
+        "Login To Trello Account Click <a href='https://trello.com/en/login'>Here</a> . Go <a href='https://trello.com/power-ups/admin/'>Here</a> Accept Agreement . Then Click <a href='https://trello.com/app-key'>Here</a> To Get Personal App Key And Reply Key With this message to proceed .",
+        {
+          parse_mode: "HTML",
+        }
+      )
       .then((keyMessage) => {
         bot.onReplyToMessage(msg.chat.id, keyMessage.message_id, (appKey) => {
           bot
