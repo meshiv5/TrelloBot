@@ -4,11 +4,14 @@
 A Telegram Bot To Work With Trello API For Managing Trello Boards From Telegram Bot .
 
 
-
+## Run This Project Locally
+ Setup This Project Locally Before Using Telegeram Bot Beacause Of Long Polling This Project is Not Deployed Cause it Will Not Work With Serverless Providers .
+- git clone https://github.com/meshiv5/TrelloBot
+- npm i
+- npm run start
 
 ## 🔗 Deployed Links
 - [Telegram Bot](https://t.me/TrelloManage_bot)
-- [Backend Microservice](https://sore-onesies-ray.cyclic.app)
 
 
 ## Showcase
@@ -44,18 +47,6 @@ Here are some available commands:
 ## Tech Stack
 
 **Server:** Node, node-telegram-bot-api , Axios , Mongoose
-
-
-## Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file
-
-
-
-
-`TELEGRAM_BOT_TOKEN` :- Token Of Telegram Bot
-
-`MONGO_DB_URL` :- Mongo Atlas URL
 
 
 ## Authors
